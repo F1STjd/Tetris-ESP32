@@ -1,0 +1,54 @@
+# --- CMake / Ninja build outputs ---
+/build/
+/build-*/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/install_manifest.txt
+/compile_commands.json
+/CTestTestfile.cmake
+/DartConfiguration.tcl
+/Testing/
+/.cmake/
+
+# Ninja internals
+/.ninja_deps
+/.ninja_log
+/*.ninja
+
+# --- Binaries and intermediate objects ---
+*.exe
+*.out
+*.obj
+*.o
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.pdb
+*.ilk
+*.exp
+
+# --- clangd / tooling cache ---
+/.cache/
+
+# --- Editor / IDE local files ---
+/.idea/
+/.vs/
+/.vscode/*
+!/.vscode/extensions.json
+
+# --- Logs / temp ---
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# --- OS noise ---
+.DS_Store
+Thumbs.db
+Desktop.ini
