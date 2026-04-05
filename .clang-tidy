@@ -1,30 +1,31 @@
 ---
-Checks: "bugprone-*,
-         cert-*,
-         -cert-dcl58-cpp,
-         cppcoreguidelines-*,
-         google-*,
-         hicpp-*,
-         -hicpp-signed-bitwise,
-         llvm-*,
-         modernize-*,
-         performance-*,
-         portability-*,
-         readability-*,
-         -readability-convert-member-functions-to-static,
-         -readability-redundant-access-specifiers,
-         -readability-identifier-length,
-         -bugprone-easily-swappable-parameters,
-         -portability-avoid-pragma-once,
-         -llvm-header-guard,
-         -clang-diagnostic-unknown-warning-option,
-         -clang-diagnostic-unknown-argument,
-         -clang-diagnostic-error"
-         
+Checks: >
+  bugprone-*,
+  cert-*,
+  -cert-dcl58-cpp,
+  cppcoreguidelines-*,
+  google-*,
+  hicpp-*,
+  -hicpp-signed-bitwise,
+  llvm-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-convert-member-functions-to-static,
+  -readability-redundant-access-specifiers,
+  -readability-identifier-length,
+  -bugprone-easily-swappable-parameters,
+  -portability-avoid-pragma-once,
+  -llvm-header-guard,
+  -clang-diagnostic-unknown-warning-option,
+  -clang-diagnostic-unknown-argument,
+  -clang-diagnostic-error
+
 WarningsAsErrors: ''
-HeaderFileExtensions: ['', 'h','hh','hpp','hxx']
-ImplementationFileExtensions: ['c','cc','cpp','cxx']
-HeaderFilterRegex: "^D:/code/vulkan/tutorial-hpp/src/.*"
+HeaderFileExtensions: ['', 'h', 'hh', 'hpp', 'hxx']
+ImplementationFileExtensions: ['c', 'cc', 'cpp', 'cxx']
+HeaderFilterRegex: '^D:/code/university/2.1/internet_rzeczy/Tetris-ESP32/.*'
 FormatStyle: file
 
 CheckOptions:
