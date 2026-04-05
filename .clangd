@@ -1,3 +1,20 @@
 CompileFlags:
   CompilationDatabase: build-release
+  Remove:
+    - -fanalyzer
+    - -Wnoexcept
+    - -Wredundant-tags
+    - -Wfatal-errors
+    - -Werror
+    - -fdiagnostics-color
+    - -fdiagnostics-urls=always
+    - -fdiagnostics-parseable-fixits
+    - -fdiagnostics-generate-patch
+    - -Wno-error=analyzer-symbol-too-complex
+    - -Wno-error=analyzer-too-complex
+    - -Wno-error=analyzer-exposure-through-uninit-copy
+
+Diagnostics:
+  ClangTidy:
+    Add: [cppcoreguidelines-init-variables]
   
