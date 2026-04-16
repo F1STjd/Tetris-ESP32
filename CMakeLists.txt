@@ -29,7 +29,7 @@ set(PROJECT_WARNING_FLAGS
 	-Wdeprecated
 	-Wctor-dtor-privacy
 	-Wredundant-tags
-	-Weffc++
+	#-Weffc++
 	-Wstrict-null-sentinel
 	-Wold-style-cast
 	-Wsign-promo
