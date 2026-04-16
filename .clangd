@@ -17,4 +17,10 @@ CompileFlags:
 Diagnostics:
   ClangTidy:
     Add: [cppcoreguidelines-init-variables]
+
+---
+If:
+  PathMatch: (^|.*[\\/])dependencies[\\/]TFT_eSPI[\\/].*
+Diagnostics:
+  Suppress: "*"
   
