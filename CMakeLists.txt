@@ -13,8 +13,8 @@ add_executable(${PROJECT_NAME} ${SRCS})
 # (3) Dołączamy katalog z nagłówkami (opcjonalnie, jeśli są)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
 
-# (4) Wymagamy standardu C++23
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
+# (4) Wymagamy standardu C++17
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 # (5) Warning policy: define once in CMake, shared by all presets/configurations.
 set(PROJECT_WARNING_FLAGS
