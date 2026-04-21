@@ -31,6 +31,8 @@ constexpr tetris::coord_t board_sprite_origin_x_px { 1 };
 constexpr tetris::coord_t board_sprite_origin_y_px { 1 };
 
 bool board_sprite_ready { false };
+bool has_last_render_signature { false };
+std::uint32_t last_render_signature { 0U };
 
 struct button_repeat_state
 {
@@ -84,6 +86,38 @@ configure_button(std::uint8_t pin)
 { pinMode(pin, INPUT_PULLUP); }
 
 void
+mix_signature(std::uint32_t& signature, std::uint32_t value)
+{ signature ^= value + 0x9E3779B9U + (signature << 6U) + (signature >> 2U); }
+
+[[nodiscard]] auto
+board_state_signature() -> std::uint32_t
+{
+  std::uint32_t signature { 2166136261U };
+
+  mix_signature(signature, static_cast<std::uint32_t>(game.game_over()));
+  mix_signature(
+    signature, static_cast<std::uint32_t>(game.active_block().index())
+  );
+
+  std::visit(
+    [ &signature ](const auto& piece) -> void
+    {
+      mix_signature(signature, static_cast<std::uint32_t>(piece.position_.x));
+      mix_signature(signature, static_cast<std::uint32_t>(piece.position_.y));
+      mix_signature(signature, static_cast<std::uint32_t>(piece.rotation));
+    },
+    game.active_block()
+  );
+
+  for (const auto& row : game.floor())
+  {
+    mix_signature(signature, static_cast<std::uint32_t>(row.to_ulong()));
+  }
+
+  return signature;
+}
+
+void
 draw_board_frame()
 {
   if (!board_sprite_ready)
@@ -99,6 +133,20 @@ draw_board_frame()
     tetris::game::board_buffer_screen_x_px,
     tetris::game::board_buffer_screen_y_px
   );
+}
+
+void
+draw_board_frame_if_changed()
+{
+  const auto signature = board_state_signature();
+  if (has_last_render_signature && signature == last_render_signature)
+  {
+    return;
+  }
+
+  draw_board_frame();
+  last_render_signature = signature;
+  has_last_render_signature = true;
 }
 
 } // namespace
@@ -134,7 +182,7 @@ setup()
 
   game.set_gravity_interval_ms(gravity_interval_ms);
   game.reset_gravity_timer(millis());
-  draw_board_frame();
+  draw_board_frame_if_changed();
 }
 
 void
@@ -166,7 +214,7 @@ loop()
   );
 
   game.tick(now_ms);
-  draw_board_frame();
+  draw_board_frame_if_changed();
 
   delay(frame_delay_ms);
 }
