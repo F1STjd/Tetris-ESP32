@@ -125,25 +125,24 @@ public:
   {
     if (game_over_) { return false; }
 
-    for (const auto kick : kick_table)
-    {
-      if (!can_place(active_, kick.x, kick.y, dir)) { continue; }
+    const auto* found_kick = std::find_if(
+      kick_table.begin(), kick_table.end(), [ this, dir ](auto kick) -> bool
+      { return can_place(active_, kick.x, kick.y, dir); }
+    );
+    if (found_kick == kick_table.end()) { return false; }
 
-      std::visit(
-        [ dir, kick ](auto& piece) noexcept -> void
-        {
-          using traits_t = block_traits<std::decay_t<decltype(piece)>>;
-          piece.rotation =
-            rotate_index_(piece.rotation, dir, traits_t::rotation_count);
-          piece.position_.x += kick.x;
-          piece.position_.y += kick.y;
-        },
-        active_
-      );
-      return true;
-    }
-
-    return false;
+    std::visit(
+      [ dir, kick = *found_kick ](auto& piece) noexcept -> void
+      {
+        using traits_t = block_traits<std::decay_t<decltype(piece)>>;
+        piece.rotation =
+          rotate_index_(piece.rotation, dir, traits_t::rotation_count);
+        piece.position_.x += kick.x;
+        piece.position_.y += kick.y;
+      },
+      active_
+    );
+    return true;
   }
 
   constexpr auto
