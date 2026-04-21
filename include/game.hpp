@@ -76,6 +76,10 @@ public:
   static constexpr coord_t board_max_y_px {
     board_min_y_px + board_pixel_height_px - 1,
   };
+  static constexpr coord_t board_buffer_width_px { board_pixel_width_px + 2 };
+  static constexpr coord_t board_buffer_height_px { board_pixel_height_px + 2 };
+  static constexpr coord_t board_buffer_screen_x_px { board_min_x_px - 1 };
+  static constexpr coord_t board_buffer_screen_y_px { board_min_y_px - 1 };
 
   game() noexcept
   {
@@ -250,46 +254,55 @@ public:
 
   template<typename Display>
   auto
-  draw_board(Display& display) const -> void
+  draw_board(
+    Display& display, coord_t board_origin_x_px = board_min_x_px,
+    coord_t board_origin_y_px = board_min_y_px
+  ) const -> void
   {
-    draw_board_frame(display);
-    draw_floor(display);
-    draw_block(display, active_);
+    draw_board_frame(display, board_origin_x_px, board_origin_y_px);
+    draw_floor(display, board_origin_x_px, board_origin_y_px);
+    draw_block(display, active_, board_origin_x_px, board_origin_y_px);
   }
 
   template<typename Display>
   auto
-  draw_board_frame(Display& display) const -> void
+  draw_board_frame(
+    Display& display, coord_t board_origin_x_px = board_min_x_px,
+    coord_t board_origin_y_px = board_min_y_px
+  ) const -> void
   {
     display.fillRect(
-      board_min_x_px, board_min_y_px, board_pixel_width_px,
+      board_origin_x_px, board_origin_y_px, board_pixel_width_px,
       board_pixel_height_px, color_board_background_
     );
     display.drawRect(
-      board_min_x_px - 1, board_min_y_px - 1, board_pixel_width_px + 2,
+      board_origin_x_px - 1, board_origin_y_px - 1, board_pixel_width_px + 2,
       board_pixel_height_px + 2, color_border_
     );
 
     for (coord_t x = 1; x < board_width; ++x)
     {
-      const auto pixel_x = board_min_x_px + (x * cell_size_px);
+      const auto pixel_x = board_origin_x_px + (x * cell_size_px);
       display.drawFastVLine(
-        pixel_x, board_min_y_px, board_pixel_height_px, color_grid_
+        pixel_x, board_origin_y_px, board_pixel_height_px, color_grid_
       );
     }
 
     for (coord_t y = 1; y < board_height; ++y)
     {
-      const auto pixel_y = board_min_y_px + (y * cell_size_px);
+      const auto pixel_y = board_origin_y_px + (y * cell_size_px);
       display.drawFastHLine(
-        board_min_x_px, pixel_y, board_pixel_width_px, color_grid_
+        board_origin_x_px, pixel_y, board_pixel_width_px, color_grid_
       );
     }
   }
 
   template<typename Display>
   auto
-  draw_floor(Display& display) const -> void
+  draw_floor(
+    Display& display, coord_t board_origin_x_px = board_min_x_px,
+    coord_t board_origin_y_px = board_min_y_px
+  ) const -> void
   {
     for (std::size_t y = 0U; y < row_count; ++y)
     {
@@ -298,7 +311,7 @@ public:
         if (!floor_[ y ].test(x)) { continue; }
         draw_cell_(
           display, static_cast<coord_t>(x), static_cast<coord_t>(y),
-          color_locked_
+          color_locked_, board_origin_x_px, board_origin_y_px
         );
       }
     }
@@ -306,11 +319,22 @@ public:
 
   template<typename Display>
   auto
-  draw_block(Display& display, const block_t& block) const -> void
+  draw_block(
+    Display& display, const block_t& block,
+    coord_t board_origin_x_px = board_min_x_px,
+    coord_t board_origin_y_px = board_min_y_px
+  ) const -> void
   {
     std::visit(
-      [ this, &display ](const auto& piece) -> void
-      { draw_piece_(display, piece, block_color_(piece)); }, block
+      [ this, &display, board_origin_x_px,
+        board_origin_y_px ](const auto& piece) -> void
+      {
+        draw_piece_(
+          display, piece, block_color_(piece), board_origin_x_px,
+          board_origin_y_px
+        );
+      },
+      block
     );
   }
 
@@ -326,23 +350,27 @@ private:
   { return x >= 0 && x < board_width && y >= 0 && y < board_height; }
 
   [[nodiscard]] static constexpr auto
-  board_to_screen_x_(coord_t board_x) noexcept -> coord_t
-  { return board_min_x_px + (board_x * cell_size_px); }
+  board_to_screen_x_(coord_t board_x, coord_t board_origin_x_px) noexcept
+    -> coord_t
+  { return board_origin_x_px + (board_x * cell_size_px); }
 
   [[nodiscard]] static constexpr auto
-  board_to_screen_y_(coord_t board_y) noexcept -> coord_t
-  { return board_min_y_px + ((board_height - 1 - board_y) * cell_size_px); }
+  board_to_screen_y_(coord_t board_y, coord_t board_origin_y_px) noexcept
+    -> coord_t
+  { return board_origin_y_px + ((board_height - 1 - board_y) * cell_size_px); }
 
   template<typename Display>
   static auto
   draw_cell_(
-    Display& display, coord_t board_x, coord_t board_y, std::uint16_t fill_color
+    Display& display, coord_t board_x, coord_t board_y,
+    std::uint16_t fill_color, coord_t board_origin_x_px,
+    coord_t board_origin_y_px
   ) -> void
   {
     if (!inside_board_(board_x, board_y)) { return; }
 
-    const auto pixel_x = board_to_screen_x_(board_x);
-    const auto pixel_y = board_to_screen_y_(board_y);
+    const auto pixel_x = board_to_screen_x_(board_x, board_origin_x_px);
+    const auto pixel_y = board_to_screen_y_(board_y, board_origin_y_px);
     display.fillRect(
       pixel_x + 1, pixel_y + 1, cell_size_px - 2, cell_size_px - 2, fill_color
     );
@@ -382,7 +410,8 @@ private:
   template<typename Display, typename Piece>
   auto
   draw_piece_(
-    Display& display, const Piece& piece, std::uint16_t fill_color
+    Display& display, const Piece& piece, std::uint16_t fill_color,
+    coord_t board_origin_x_px, coord_t board_origin_y_px
   ) const -> void
   {
     using traits_t = block_traits<Piece>;
@@ -396,7 +425,7 @@ private:
         if (!mask_cell(mask, local_x, local_y)) { continue; }
         draw_cell_(
           display, piece.position_.x + local_x, piece.position_.y + local_y,
-          fill_color
+          fill_color, board_origin_x_px, board_origin_y_px
         );
       }
     }

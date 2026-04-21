@@ -7,6 +7,7 @@
 #include <TFT_eSPI.h>
 
 TFT_eSPI tft = TFT_eSPI();
+TFT_eSprite board_sprite(&tft);
 
 namespace
 {
@@ -24,6 +25,12 @@ constexpr std::uint32_t gravity_interval_ms { 650U };
 constexpr std::uint32_t move_repeat_ms { 120U };
 constexpr std::uint32_t soft_drop_repeat_ms { 70U };
 constexpr std::uint32_t frame_delay_ms { 16U };
+constexpr std::int8_t preferred_board_sprite_color_depth { 16 };
+constexpr std::int8_t fallback_board_sprite_color_depth { 8 };
+constexpr tetris::coord_t board_sprite_origin_x_px { 1 };
+constexpr tetris::coord_t board_sprite_origin_y_px { 1 };
+
+bool board_sprite_ready { false };
 
 struct button_repeat_state
 {
@@ -76,6 +83,24 @@ void
 configure_button(std::uint8_t pin)
 { pinMode(pin, INPUT_PULLUP); }
 
+void
+draw_board_frame()
+{
+  if (!board_sprite_ready)
+  {
+    game.draw_board(tft);
+    return;
+  }
+
+  game.draw_board(
+    board_sprite, board_sprite_origin_x_px, board_sprite_origin_y_px
+  );
+  board_sprite.pushSprite(
+    tetris::game::board_buffer_screen_x_px,
+    tetris::game::board_buffer_screen_y_px
+  );
+}
+
 } // namespace
 
 void
@@ -91,9 +116,25 @@ setup()
   tft.setRotation(display_rotation);
   tft.fillScreen(TFT_BLACK);
 
+  board_sprite.setColorDepth(preferred_board_sprite_color_depth);
+  board_sprite_ready =
+    board_sprite.createSprite(
+      static_cast<std::int16_t>(tetris::game::board_buffer_width_px),
+      static_cast<std::int16_t>(tetris::game::board_buffer_height_px)
+    ) != nullptr;
+  if (!board_sprite_ready)
+  {
+    board_sprite.setColorDepth(fallback_board_sprite_color_depth);
+    board_sprite_ready =
+      board_sprite.createSprite(
+        static_cast<std::int16_t>(tetris::game::board_buffer_width_px),
+        static_cast<std::int16_t>(tetris::game::board_buffer_height_px)
+      ) != nullptr;
+  }
+
   game.set_gravity_interval_ms(gravity_interval_ms);
   game.reset_gravity_timer(millis());
-  game.draw_board(tft);
+  draw_board_frame();
 }
 
 void
@@ -125,7 +166,7 @@ loop()
   );
 
   game.tick(now_ms);
-  game.draw_board(tft);
+  draw_board_frame();
 
   delay(frame_delay_ms);
 }
