@@ -84,6 +84,25 @@ public:
     spawn_next_from_bag();
   }
 
+  auto
+  reset() noexcept -> void
+  {
+    floor_ = {};
+    bag_index_ = bag_size_u8;
+    hold_.reset();
+    active_ = block::O {};
+    next_ = block::O {};
+    score_ = 0U;
+    lines_ = 0U;
+    level_ = 1U;
+    hold_used_ = false;
+    game_over_ = false;
+
+    refill_bag_();
+    next_ = draw_from_bag_();
+    spawn_next_from_bag();
+  }
+
   [[nodiscard]] constexpr auto
   can_place(
     const block_t& block, coord_t dx = 0, coord_t dy = 0, std::int8_t drot = 0
@@ -243,6 +262,18 @@ public:
   [[nodiscard]] constexpr auto
   floor() const noexcept -> const floor_t&
   { return floor_; }
+
+  [[nodiscard]] constexpr auto
+  score() const noexcept -> std::uint32_t
+  { return score_; }
+
+  [[nodiscard]] constexpr auto
+  lines() const noexcept -> std::uint32_t
+  { return lines_; }
+
+  [[nodiscard]] constexpr auto
+  level() const noexcept -> std::uint32_t
+  { return level_; }
 
   [[nodiscard]] constexpr auto
   game_over() const noexcept -> bool
