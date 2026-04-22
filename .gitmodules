@@ -1,3 +1,12 @@
 [submodule "dependencies/TFT_eSPI"]
 	path = dependencies/TFT_eSPI
 	url = git@github.com:Bodmer/TFT_eSPI.git
+[submodule "dependencies/ESPAsyncWebServer"]
+	path = dependencies/ESPAsyncWebServer
+	url = https://github.com/ESP32Async/ESPAsyncWebServer
+[submodule "dependencies/AsyncTCP"]
+	path = dependencies/AsyncTCP
+	url = https://github.com/ESP32Async/AsyncTCP
+[submodule "dependencies/ArduinoJson"]
+	path = dependencies/ArduinoJson
+	url = https://github.com/bblanchon/ArduinoJson
