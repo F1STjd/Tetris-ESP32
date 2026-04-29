@@ -17,6 +17,7 @@
 
 TFT_eSPI tft = TFT_eSPI();
 AsyncWebServer server(80);
+TFT_eSprite board_sprite(&tft);
 
 namespace
 {
@@ -202,6 +203,12 @@ pending_score_data pending_score {};
 std::uint32_t game_started_ms { 0U };
 bool previous_game_over { false };
 bool spiffs_ready { false };
+constexpr std::int8_t preferred_board_sprite_color_depth { 16 };
+constexpr std::int8_t fallback_board_sprite_color_depth { 8 };
+constexpr tetris::coord_t board_sprite_origin_x_px { 1 };
+constexpr tetris::coord_t board_sprite_origin_y_px { 1 };
+
+bool board_sprite_ready { false };
 
 struct button_repeat_state
 {
@@ -608,6 +615,24 @@ void
 configure_button(std::uint8_t pin)
 { pinMode(pin, INPUT_PULLUP); }
 
+void
+draw_board_frame()
+{
+  if (!board_sprite_ready)
+  {
+    game.draw_board(tft);
+    return;
+  }
+
+  game.draw_board(
+    board_sprite, board_sprite_origin_x_px, board_sprite_origin_y_px
+  );
+  board_sprite.pushSprite(
+    tetris::game::board_buffer_screen_x_px,
+    tetris::game::board_buffer_screen_y_px
+  );
+}
+
 } // namespace
 
 void
@@ -628,15 +653,29 @@ setup()
   connect_network();
   mount_spiffs();
   load_scoreboard();
+  board_sprite.setColorDepth(preferred_board_sprite_color_depth);
+  board_sprite_ready =
+    board_sprite.createSprite(
+      static_cast<std::int16_t>(tetris::game::board_buffer_width_px),
+      static_cast<std::int16_t>(tetris::game::board_buffer_height_px)
+    ) != nullptr;
+  if (!board_sprite_ready)
+  {
+    board_sprite.setColorDepth(fallback_board_sprite_color_depth);
+    board_sprite_ready =
+      board_sprite.createSprite(
+        static_cast<std::int16_t>(tetris::game::board_buffer_width_px),
+        static_cast<std::int16_t>(tetris::game::board_buffer_height_px)
+      ) != nullptr;
+  }
 
   game.set_gravity_interval_ms(gravity_interval_ms);
   game_started_ms = millis();
   game.reset_gravity_timer(game_started_ms);
   previous_game_over = game.game_over();
-  game.draw_board(tft);
+  draw_board_frame();
 
   configure_server();
-
   Serial.print("Dashboard ready at: http://");
   Serial.println(server_ip_text());
 }
@@ -676,8 +715,7 @@ loop()
     capture_pending_score(now_ms);
   }
   previous_game_over = is_now_game_over;
-
-  game.draw_board(tft);
+  draw_board_frame();
 
   delay(frame_delay_ms);
 }
