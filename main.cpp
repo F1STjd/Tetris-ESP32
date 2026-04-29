@@ -7,7 +7,6 @@
 #include <SPI.h>
 #include <TFT_eSPI.h>
 
-
 #include <algorithm>
 #include <cstring>
 #include <memory>
@@ -166,7 +165,7 @@ setup()
   game.set_gravity_interval_ms(gravity_interval_ms);
   tetris_server::game_started_ms = millis();
   game.reset_gravity_timer(tetris_server::game_started_ms);
-  tetris_server::tetris_server::previous_game_over = game.game_over();
+  tetris_server::previous_game_over = game.game_over();
   draw_board_frame();
 
   tetris_server::configure_server(game, gravity_interval_ms);
