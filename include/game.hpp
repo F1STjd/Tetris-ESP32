@@ -4,6 +4,9 @@
 
 #if defined(ARDUINO_ARCH_ESP32)
 #include <esp_system.h>
+#if __has_include(<esp_random.h>)
+#include <esp_random.h>
+#endif
 #elif defined(ESP_PLATFORM)
 #include <esp_random.h>
 #endif
