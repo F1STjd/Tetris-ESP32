@@ -2,10 +2,11 @@
 
 #if defined(ARDUINO)
 
-#include <Arduino.h>
 #include "include/server.hpp"
+#include <Arduino.h>
 #include <SPI.h>
 #include <TFT_eSPI.h>
+
 
 #include <algorithm>
 #include <cstring>
@@ -54,6 +55,77 @@ bool drop_was_pressed { false };
 [[nodiscard]] auto
 is_pressed(std::uint8_t pin) -> bool
 { return digitalRead(pin) == HIGH; }
+
+template<typename Action>
+void
+handle_repeat_button(
+  std::uint8_t pin, std::uint32_t now_ms, std::uint32_t repeat_ms,
+  button_repeat_state& state, Action action
+)
+{
+  if (!is_pressed(pin))
+  {
+    state.was_pressed = false;
+    return;
+  }
+
+  if (!state.was_pressed || (now_ms - state.last_trigger_ms) >= repeat_ms)
+  {
+    action();
+    state.last_trigger_ms = now_ms;
+  }
+  state.was_pressed = true;
+}
+
+template<typename Action>
+void
+handle_edge_button(std::uint8_t pin, bool& was_pressed, Action action)
+{
+  const auto pressed = is_pressed(pin);
+  if (pressed && !was_pressed) { action(); }
+  was_pressed = pressed;
+}
+
+void
+configure_button(std::uint8_t pin)
+{ pinMode(pin, INPUT_PULLUP); }
+
+void
+draw_board_frame()
+{
+  if (!board_sprite_ready)
+  {
+    game.draw_board(tft);
+    if (game.game_over())
+    {
+      tft.setTextDatum(MC_DATUM);
+      tft.setTextColor(TFT_WHITE, TFT_RED);
+      tft.drawString(
+        "GAME OVER", tetris::game::display_width_px / 2,
+        tetris::game::display_height_px / 2, 4
+      );
+    }
+    return;
+  }
+
+  game.draw_board(
+    board_sprite, board_sprite_origin_x_px, board_sprite_origin_y_px
+  );
+
+  if (game.game_over())
+  {
+    board_sprite.setTextDatum(MC_DATUM);
+    board_sprite.setTextColor(TFT_WHITE, TFT_RED);
+    board_sprite.drawString(
+      "GAME OVER", board_sprite.width() / 2, board_sprite.height() / 2, 4
+    );
+  }
+
+  board_sprite.pushSprite(
+    tetris::game::board_buffer_screen_x_px,
+    tetris::game::board_buffer_screen_y_px
+  );
+}
 
 } // namespace
 
