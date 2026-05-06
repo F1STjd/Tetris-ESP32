@@ -29,7 +29,7 @@ constexpr char scoreboard_file_path[] { "/scores.json" };
 constexpr std::size_t max_scoreboard_entries { 20U };
 constexpr std::size_t player_name_max_length { 20U };
 
-const char dashboard_html[] PROGMEM = R"HTML(
+static constexpr char dashboard_html[] PROGMEM = R"HTML(
 <!doctype html>
 <html lang="pl">
 <head>
@@ -768,30 +768,15 @@ inline std::uint32_t game_started_ms { 0U };
 inline bool previous_game_over { false };
 inline bool spiffs_ready { false };
 
-[[nodiscard]] inline auto
-block_name_for(const tetris::block_t& block) -> const char*
+[[nodiscard]] constexpr auto
+block_name_for(const tetris::block_t& block) -> std::string_view
 {
-  switch (block.index())
-  {
-  case 0U:
-    return "O";
-  case 1U:
-    return "I";
-  case 2U:
-    return "S";
-  case 3U:
-    return "Z";
-  case 4U:
-    return "J";
-  case 5U:
-    return "L";
-  case 6U:
-  default:
-    return "T";
-  }
+  static constexpr std::array<std::string_view, 7> names { "O", "I", "S", "Z",
+    "J", "L", "T" };
+  return names[ block.index() ];
 }
 
-[[nodiscard]] inline auto
+[[nodiscard]] constexpr auto
 sanitize_player_name(String name) -> String
 {
   name.trim();
@@ -885,7 +870,7 @@ load_scoreboard()
   sort_and_trim_scoreboard();
 }
 
-inline void
+constexpr void
 add_score_from_pending(const String& player_name)
 {
   if (!pending_score.ready) { return; }
@@ -904,7 +889,7 @@ add_score_from_pending(const String& player_name)
   pending_score.ready = false;
 }
 
-inline void
+constexpr void
 capture_pending_score(tetris::game& game, std::uint32_t now_ms)
 {
   pending_score.ready = true;
@@ -915,7 +900,7 @@ capture_pending_score(tetris::game& game, std::uint32_t now_ms)
   pending_score.ended_at_ms = now_ms;
 }
 
-inline void
+constexpr void
 restart_game(
   tetris::game& game, std::uint32_t gravity_interval_ms, std::uint32_t now_ms
 )
