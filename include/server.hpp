@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <cstring>
 #include <memory>
+#include <ranges>
+#include <utility>
 #include <vector>
 
 namespace tetris_server
@@ -804,16 +806,16 @@ sanitize_player_name(String name) -> String
   return name;
 }
 
-inline void
+constexpr void
 sort_and_trim_scoreboard()
 {
-  std::sort(
-    scoreboard.begin(), scoreboard.end(),
-    [](const scoreboard_entry& left, const scoreboard_entry& right) -> bool
+  std::ranges::sort(
+    scoreboard,
+    [](const scoreboard_entry& lhs, const scoreboard_entry& rhs) -> bool
     {
-      if (left.score != right.score) { return left.score > right.score; }
-      if (left.lines != right.lines) { return left.lines > right.lines; }
-      return left.ended_at_ms > right.ended_at_ms;
+      if (lhs.score != rhs.score) { return lhs.score > rhs.score; }
+      if (lhs.lines != rhs.lines) { return lhs.lines > rhs.lines; }
+      return lhs.ended_at_ms > rhs.ended_at_ms;
     }
   );
 
