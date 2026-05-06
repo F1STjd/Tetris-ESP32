@@ -51,12 +51,12 @@ button_repeat_state down_state {};
 bool rotate_was_pressed { false };
 bool drop_was_pressed { false };
 
-[[nodiscard]] auto
+[[nodiscard]] constexpr auto
 is_pressed(std::uint8_t pin) -> bool
 { return digitalRead(pin) == HIGH; }
 
 template<typename Action>
-void
+constexpr void
 handle_repeat_button(
   std::uint8_t pin, std::uint32_t now_ms, std::uint32_t repeat_ms,
   button_repeat_state& state, Action action
@@ -77,7 +77,7 @@ handle_repeat_button(
 }
 
 template<typename Action>
-void
+constexpr void
 handle_edge_button(std::uint8_t pin, bool& was_pressed, Action action)
 {
   const auto pressed = is_pressed(pin);
@@ -85,11 +85,11 @@ handle_edge_button(std::uint8_t pin, bool& was_pressed, Action action)
   was_pressed = pressed;
 }
 
-void
+constexpr void
 configure_button(std::uint8_t pin)
 { pinMode(pin, INPUT_PULLUP); }
 
-void
+constexpr void
 draw_board_frame()
 {
   if (!board_sprite_ready)
