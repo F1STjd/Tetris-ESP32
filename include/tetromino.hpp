@@ -30,43 +30,43 @@ namespace block
 
 struct O
 {
-  point_2d position_ { spawn_x, spawn_y };
+  point_2d position_ { .x = spawn_x, .y = spawn_y };
   rotation_t rotation { 0U };
 };
 
 struct I
 {
-  point_2d position_ { spawn_x, spawn_y };
+  point_2d position_ { .x = spawn_x, .y = spawn_y };
   rotation_t rotation { 0U };
 };
 
 struct S
 {
-  point_2d position_ { spawn_x, spawn_y };
+  point_2d position_ { .x = spawn_x, .y = spawn_y };
   rotation_t rotation { 0U };
 };
 
 struct Z
 {
-  point_2d position_ { spawn_x, spawn_y };
+  point_2d position_ { .x = spawn_x, .y = spawn_y };
   rotation_t rotation { 0U };
 };
 
 struct J
 {
-  point_2d position_ { spawn_x, spawn_y };
+  point_2d position_ { .x = spawn_x, .y = spawn_y };
   rotation_t rotation { 0U };
 };
 
 struct L
 {
-  point_2d position_ { spawn_x, spawn_y };
+  point_2d position_ { .x = spawn_x, .y = spawn_y };
   rotation_t rotation { 0U };
 };
 
 struct T
 {
-  point_2d position_ { spawn_x, spawn_y };
+  point_2d position_ { .x = spawn_x, .y = spawn_y };
   rotation_t rotation { 0U };
 };
 
