@@ -19,6 +19,7 @@
 #include <numeric>
 #include <optional>
 #include <type_traits>
+#include <utility>
 #include <variant>
 
 namespace tetris
@@ -40,7 +41,7 @@ struct esp32_urbg
   max() noexcept -> result_type
   { return std::numeric_limits<std::uint32_t>::max(); }
 
-  auto
+  constexpr auto
   operator()() noexcept -> result_type
   {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ESP_PLATFORM)
@@ -84,15 +85,15 @@ public:
   static constexpr coord_t board_buffer_screen_x_px { board_min_x_px - 1 };
   static constexpr coord_t board_buffer_screen_y_px { board_min_y_px - 1 };
 
-  game() noexcept
+  constexpr game() noexcept
   {
     refill_bag_();
     next_ = draw_from_bag_();
     spawn_next_from_bag();
   }
 
-  auto
-  reset() noexcept -> void
+  constexpr void
+  reset() noexcept
   {
     floor_ = {};
     bag_index_ = bag_size_u8;
@@ -171,8 +172,8 @@ public:
     return true;
   }
 
-  constexpr auto
-  lock_active_into_floor() noexcept -> void
+  constexpr void
+  lock_active_into_floor() noexcept
   {
     if (game_over_) { return; }
 
@@ -213,28 +214,27 @@ public:
     return cleared_lines;
   }
 
-  constexpr auto
-  spawn_next_from_bag() noexcept -> void
+  constexpr void
+  spawn_next_from_bag() noexcept
   {
-    active_ = next_;
-    next_ = draw_from_bag_();
+    active_ = std::exchange(next_, draw_from_bag_());
     hold_used_ = false;
     if (!can_place(active_)) { game_over_ = true; }
   }
 
-  auto
-  set_gravity_interval_ms(std::uint32_t interval_ms) noexcept -> void
+  constexpr void
+  set_gravity_interval_ms(std::uint32_t interval_ms) noexcept
   {
     if (interval_ms == 0U) { return; }
     gravity_interval_ms_ = interval_ms;
   }
 
-  auto
-  reset_gravity_timer(std::uint32_t now_ms) noexcept -> void
+  constexpr void
+  reset_gravity_timer(std::uint32_t now_ms) noexcept
   { last_gravity_ms_ = now_ms; }
 
-  auto
-  tick(std::uint32_t now_ms) noexcept -> void
+  constexpr void
+  tick(std::uint32_t now_ms) noexcept
   {
     if (game_over_) { return; }
     if ((now_ms - last_gravity_ms_) < gravity_interval_ms_) { return; }
@@ -243,15 +243,15 @@ public:
     if (!try_move(0, -1)) { lock_active_into_floor(); }
   }
 
-  auto
-  soft_drop() noexcept -> void
+  constexpr void
+  soft_drop() noexcept
   {
     if (game_over_) { return; }
     if (!try_move(0, -1)) { lock_active_into_floor(); }
   }
 
-  auto
-  hard_drop() noexcept -> void
+  constexpr void
+  hard_drop() noexcept
   {
     if (game_over_) { return; }
     while (try_move(0, -1)) {}
@@ -287,11 +287,11 @@ public:
   { return game_over_; }
 
   template<typename Display>
-  auto
+  constexpr void
   draw_board(
     Display& display, coord_t board_origin_x_px = board_min_x_px,
     coord_t board_origin_y_px = board_min_y_px
-  ) const -> void
+  ) const
   {
     draw_board_frame(display, board_origin_x_px, board_origin_y_px);
     draw_floor(display, board_origin_x_px, board_origin_y_px);
@@ -299,11 +299,11 @@ public:
   }
 
   template<typename Display>
-  auto
+  constexpr void
   draw_board_frame(
     Display& display, coord_t board_origin_x_px = board_min_x_px,
     coord_t board_origin_y_px = board_min_y_px
-  ) const -> void
+  ) const
   {
     display.fillRect(
       board_origin_x_px, board_origin_y_px, board_pixel_width_px,
@@ -332,11 +332,11 @@ public:
   }
 
   template<typename Display>
-  auto
+  constexpr void
   draw_floor(
     Display& display, coord_t board_origin_x_px = board_min_x_px,
     coord_t board_origin_y_px = board_min_y_px
-  ) const -> void
+  ) const
   {
     for (std::size_t y = 0U; y < row_count; ++y)
     {
@@ -352,16 +352,16 @@ public:
   }
 
   template<typename Display>
-  auto
+  constexpr void
   draw_block(
     Display& display, const block_t& block,
     coord_t board_origin_x_px = board_min_x_px,
     coord_t board_origin_y_px = board_min_y_px
-  ) const -> void
+  ) const
   {
     std::visit(
       [ this, &display, board_origin_x_px,
-        board_origin_y_px ](const auto& piece) -> void
+        board_origin_y_px ](const auto& piece)
       {
         draw_piece_(
           display, piece, block_color_(piece), board_origin_x_px,
@@ -394,12 +394,12 @@ private:
   { return board_origin_y_px + ((board_height - 1 - board_y) * cell_size_px); }
 
   template<typename Display>
-  static auto
+  static constexpr void
   draw_cell_(
     Display& display, coord_t board_x, coord_t board_y,
     std::uint16_t fill_color, coord_t board_origin_x_px,
     coord_t board_origin_y_px
-  ) -> void
+  )
   {
     if (!inside_board_(board_x, board_y)) { return; }
 
@@ -413,40 +413,40 @@ private:
     );
   }
 
-  [[nodiscard]] static constexpr auto
+  [[nodiscard]] static consteval auto
   block_color_(const block::O& /*unused*/) noexcept -> std::uint16_t
   { return 0xFFE0U; }
 
-  [[nodiscard]] static constexpr auto
+  [[nodiscard]] static consteval auto
   block_color_(const block::I& /*unused*/) noexcept -> std::uint16_t
   { return 0x07FFU; }
 
-  [[nodiscard]] static constexpr auto
+  [[nodiscard]] static consteval auto
   block_color_(const block::S& /*unused*/) noexcept -> std::uint16_t
   { return 0x07E0U; }
 
-  [[nodiscard]] static constexpr auto
+  [[nodiscard]] static consteval auto
   block_color_(const block::Z& /*unused*/) noexcept -> std::uint16_t
   { return 0xF800U; }
 
-  [[nodiscard]] static constexpr auto
+  [[nodiscard]] static consteval auto
   block_color_(const block::J& /*unused*/) noexcept -> std::uint16_t
   { return 0x001FU; }
 
-  [[nodiscard]] static constexpr auto
+  [[nodiscard]] static consteval auto
   block_color_(const block::L& /*unused*/) noexcept -> std::uint16_t
   { return 0xFD20U; }
 
-  [[nodiscard]] static constexpr auto
+  [[nodiscard]] static consteval auto
   block_color_(const block::T& /*unused*/) noexcept -> std::uint16_t
   { return 0xF81FU; }
 
   template<typename Display, typename Piece>
-  auto
+  constexpr void
   draw_piece_(
     Display& display, const Piece& piece, std::uint16_t fill_color,
     coord_t board_origin_x_px, coord_t board_origin_y_px
-  ) const -> void
+  ) const
   {
     using traits_t = block_traits<Piece>;
     const auto mask =
@@ -516,8 +516,8 @@ private:
   }
 
   template<typename Piece>
-  constexpr auto
-  stamp_piece_to_floor_(const Piece& piece) noexcept -> void
+  constexpr void
+  stamp_piece_to_floor_(const Piece& piece) noexcept
   {
     using traits_t = block_traits<Piece>;
     const auto mask =
@@ -584,8 +584,8 @@ private:
     return make_piece_from_id_(id);
   }
 
-  constexpr auto
-  update_score_(std::uint8_t cleared_lines) noexcept -> void
+  constexpr void
+  update_score_(std::uint8_t cleared_lines) noexcept
   {
     lines_ += cleared_lines;
 
