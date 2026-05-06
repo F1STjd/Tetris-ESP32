@@ -13,6 +13,10 @@ CompileFlags:
     - -Wno-error=analyzer-symbol-too-complex
     - -Wno-error=analyzer-too-complex
     - -Wno-error=analyzer-exposure-through-uninit-copy
+    - -fmodules-ts
+    - -fmodule-mapper=CMakeFiles\TETRIS-ESP32.dir\main.cpp.obj.modmap
+    - -fdeps-format=p1689r51
+    - -fdeps-format=p1689r5
 
 Diagnostics:
   ClangTidy:
