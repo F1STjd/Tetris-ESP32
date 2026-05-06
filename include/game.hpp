@@ -151,8 +151,8 @@ public:
   {
     if (game_over_) { return false; }
 
-    const auto* found_kick = std::find_if(
-      kick_table.begin(), kick_table.end(), [ this, dir ](auto kick) -> bool
+    const auto* found_kick = std::ranges::find_if(
+      kick_table, [ this, dir ](auto kick) -> bool
       { return can_place(active_, kick.x, kick.y, dir); }
     );
     if (found_kick == kick_table.end()) { return false; }
@@ -562,16 +562,17 @@ private:
     case 5:
       return block::L {};
     case 6:
-    default:
       return block::T {};
+    default:
+      std::unreachable();
     }
   }
 
-  auto
-  refill_bag_() noexcept -> void
+  constexpr void
+  refill_bag_() noexcept
   {
-    std::iota(bag_.begin(), bag_.end(), std::uint8_t {});
-    std::shuffle(bag_.begin(), bag_.end(), rng_);
+    std::ranges::iota(bag_, std::uint8_t {});
+    std::ranges::shuffle(bag_, rng_);
     bag_index_ = 0;
   }
 
