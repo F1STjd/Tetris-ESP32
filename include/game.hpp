@@ -138,13 +138,12 @@ public:
     return true;
   }
 
-  // co to robi sie dowiedziec?
   static constexpr std::array<point_2d, 5> kick_table {
-    point_2d { 0, 0 },
-    point_2d { -1, 0 },
-    point_2d { 1, 0 },
-    point_2d { 0, 1 },
-    point_2d { 0, -1 },
+    point_2d { .x = 0, .y = 0 },
+    point_2d { .x = -1, .y = 0 },
+    point_2d { .x = 1, .y = 0 },
+    point_2d { .x = 0, .y = 1 },
+    point_2d { .x = 0, .y = -1 },
   };
 
   constexpr auto
